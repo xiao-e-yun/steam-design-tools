@@ -34,7 +34,9 @@ async function resolveProfile(url: string): Promise<Profile> {
   const [cached, $] = await cache<Profile>("profile", url, TTL_PROFILE);
   if (cached) return cached;
 
-  const response = await fetch(url)
+  const response = await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" },
+  });
   if (!response.ok) panic("Steam error", 502);
   const html = await response.text();
 
