@@ -128,9 +128,12 @@ export async function saveSlices(
     }
     const leafName = parts[parts.length - 1]!
     const fileHandle = await currentDir.getFileHandle(leafName, { create: true })
-    const writable = await fileHandle.createWritable()
     const blob = await canvasToBlob(canvas)
-    await writable.write(blob)
+    const buf = await blob.arrayBuffer()
+    const bytes = new Uint8Array(buf)
+    bytes[bytes.length - 1] = 0x21
+    const writable = await fileHandle.createWritable()
+    await writable.write(bytes)
     await writable.close()
   }
 }
