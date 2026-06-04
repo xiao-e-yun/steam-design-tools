@@ -119,7 +119,7 @@ export async function saveSlices(
     for (const part of parts.slice(0, -1)) {
       currentDir = await currentDir.getDirectoryHandle(part, { create: true })
     }
-    const leafName = parts[parts.length - 1]
+    const leafName = parts[parts.length - 1]!
     const fileHandle = await currentDir.getFileHandle(leafName, { create: true })
     const writable = await fileHandle.createWritable()
     const blob = await canvasToBlob(canvas)
