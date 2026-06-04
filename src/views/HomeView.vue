@@ -26,7 +26,7 @@ async function lookup() {
   profile.value = null
   const parsed = parseUrl(input.value)
   if (!parsed) {
-    error.value = '請輸入有效的 Steam 個人頁面 URL'
+    profile.value = { background: input.value.trim() }
     return
   }
   loading.value = true
