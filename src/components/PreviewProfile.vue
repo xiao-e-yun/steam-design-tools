@@ -11,6 +11,7 @@ const props = defineProps<{ profile: Profile }>()
   <div
     v-if="profile.background"
     :class="$style.preview"
+    :style="{ backgroundImage: `url(${profile.background})` }"
   >
     <div :class="$style.previewBg">
       <video
@@ -29,8 +30,8 @@ const props = defineProps<{ profile: Profile }>()
     </div>
     <div :class="$style.previewContainer">
       <svg
-        width="976"
-        height="1170"
+        width="100%"
+        height="100%"
         viewBox="0 0 976 1170"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -51,28 +52,31 @@ const props = defineProps<{ profile: Profile }>()
 .preview {
   position: relative;
   width: 100%;
-  display: flex;
-  flex-direction: column;
+  aspect-ratio: 1920 / 1080;
+  overflow: hidden;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 50% 0;
 }
 
 .previewBg {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  z-index: -1;
+  inset: 0;
+  z-index: 0;
 }
 
 .bgImage {
   width: 100%;
+  height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .previewContainer {
-  width: 976px;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: calc(976 / 1920 * 100%);
   margin: 0 auto;
-  min-height: 1080px;
 }
 </style>
