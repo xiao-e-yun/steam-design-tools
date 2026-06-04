@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import PreviewProfile from '@/components/PreviewProfile.vue'
 
 interface Profile {
   background: string | null
@@ -57,20 +58,8 @@ async function lookup() {
       <button type="submit" :disabled="loading">{{ loading ? '查詢中…' : '查詢' }}</button>
     </form>
     <p v-if="error" class="error">{{ error }}</p>
-    <div v-if="profile" class="result">
-      <p v-if="!profile.background" class="no-bg">此用戶沒有設定背景</p>
-      <template v-else>
-        <video
-          v-if="profile.animatedBackground"
-          :poster="profile.background"
-          autoplay loop muted playsinline
-        >
-          <source :src="profile.animatedBackground.webm" type="video/webm" />
-          <source :src="profile.animatedBackground.mp4" type="video/mp4" />
-        </video>
-        <img v-else :src="profile.background" alt="profile background" />
-      </template>
-    </div>
+    <p v-if="profile && !profile.background" class="no-bg">此用戶沒有設定背景</p>
+    <PreviewProfile v-else-if="profile" :profile="profile" />
   </main>
 </template>
 
@@ -110,10 +99,4 @@ button {
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 .error { color: #e06c6c; margin-top: 0.75rem; }
 .no-bg { color: #888; margin-top: 1rem; }
-.result { margin-top: 1.5rem; }
-.result img,
-.result video {
-  width: 100%;
-  border-radius: 4px;
-}
 </style>
