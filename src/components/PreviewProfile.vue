@@ -11,11 +11,6 @@ const props = defineProps<{ profile: Profile }>()
   <div
     v-if="profile.background"
     :class="$style.preview"
-    :style="{
-      backgroundImage: `url('${profile.background}')`,
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: '49.999% 0px',
-    }"
   >
     <div :class="$style.previewBg">
       <video
@@ -30,6 +25,7 @@ const props = defineProps<{ profile: Profile }>()
         <source :src="profile.animatedBackground.webm" type="video/webm" />
         <source :src="profile.animatedBackground.mp4" type="video/mp4" />
       </video>
+      <img v-else :src="profile.background" :class="$style.bgImage" alt="" />
     </div>
     <div :class="$style.previewContainer">
       <svg
@@ -67,6 +63,11 @@ const props = defineProps<{ profile: Profile }>()
   display: flex;
   justify-content: center;
   z-index: -1;
+}
+
+.bgImage {
+  width: 100%;
+  object-fit: cover;
 }
 
 .previewContainer {
