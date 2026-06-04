@@ -17,6 +17,10 @@ function onFileChange(e: Event) {
 }
 
 async function pickFolder() {
+  if (!('showDirectoryPicker' in window)) {
+    status.value = '此瀏覽器不支援資料夾選擇，請使用 Chrome 或 Edge'
+    return
+  }
   try {
     dirHandle.value = await (window as any).showDirectoryPicker({ mode: 'readwrite' })
     status.value = `已選擇資料夾：${dirHandle.value!.name}`

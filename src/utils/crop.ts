@@ -23,7 +23,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => resolve(img)
-    img.onerror = reject
+    img.onerror = () => reject(new Error(`圖片載入失敗：${src}`))
     img.src = src
   })
 }
@@ -34,34 +34,42 @@ export async function buildComposite(
   bgUrl: string | null,
 ): Promise<HTMLCanvasElement> {
   const region = BG_REGIONS[type]
-  const userImg = await loadImage(URL.createObjectURL(userFile))
+  const objectUrl = URL.createObjectURL(userFile)
+  try {
+    const userImg = await loadImage(objectUrl)
 
-  const scale = region.finalW / userImg.naturalWidth
-  const scaledW = region.finalW
-  const scaledH = Math.round(userImg.naturalHeight * scale)
+    if (!userImg.naturalWidth || !userImg.naturalHeight) {
+      throw new Error(`圖片尺寸無效：${userFile.name}`)
+    }
 
-  const canvas = document.createElement('canvas')
-  canvas.width = scaledW
-  canvas.height = scaledH
-  const ctx = canvas.getContext('2d')!
+    const scale = region.finalW / userImg.naturalWidth
+    const scaledW = region.finalW
+    const scaledH = Math.round(userImg.naturalHeight * scale)
 
-  ctx.fillStyle = '#000000'
-  ctx.fillRect(0, 0, scaledW, scaledH)
+    const canvas = document.createElement('canvas')
+    canvas.width = scaledW
+    canvas.height = scaledH
+    const ctx = canvas.getContext('2d')!
 
-  if (bgUrl) {
-    const bgImg = await loadImage(bgUrl)
-    const bgCropH = bgImg.naturalHeight - region.bgY
-    const bgDestH = Math.round((bgCropH / region.bgW) * scaledW)
-    ctx.drawImage(
-      bgImg,
-      region.bgX, region.bgY, region.bgW, bgCropH,
-      0, 0, scaledW, Math.min(bgDestH, scaledH),
-    )
+    ctx.fillStyle = '#000000'
+    ctx.fillRect(0, 0, scaledW, scaledH)
+
+    if (bgUrl) {
+      const bgImg = await loadImage(bgUrl)
+      const bgCropH = bgImg.naturalHeight - region.bgY
+      const bgDestH = Math.round((bgCropH / region.bgW) * scaledW)
+      ctx.drawImage(
+        bgImg,
+        region.bgX, region.bgY, region.bgW, bgCropH,
+        0, 0, scaledW, Math.min(bgDestH, scaledH),
+      )
+    }
+
+    ctx.drawImage(userImg, 0, 0, scaledW, scaledH)
+    return canvas
+  } finally {
+    URL.revokeObjectURL(objectUrl)
   }
-
-  ctx.drawImage(userImg, 0, 0, scaledW, scaledH)
-  URL.revokeObjectURL(userImg.src)
-  return canvas
 }
 
 export function sliceCanvas(
