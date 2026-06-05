@@ -21,6 +21,13 @@ export const routes = [
       description: 'Crop images for Steam showcases',
       component: () => import('../views/CropView.vue'),
     },
+    {
+      path: '/guides',
+      name: 'guides',
+      title: 'Upload Guides',
+      description: 'How to upload long images to Steam',
+      component: () => import('../views/GuidesView.vue'),
+    },
   ]
 
 const router = createRouter({

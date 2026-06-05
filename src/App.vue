@@ -24,6 +24,7 @@ const route = useRoute()
 const navItems = [
   {label: 'Crop Images', to: '/crop'},
   {label: 'Lookup Background', to: '/lookup'},
+  {label: 'Upload Guides', to: '/guides'},
 ]
 </script>
 
