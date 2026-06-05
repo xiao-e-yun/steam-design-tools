@@ -10,6 +10,11 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: '/lookup',
+      name: 'lookup',
+      component: () => import('../views/LookupView.vue'),
+    },
+    {
       path: '/crop',
       name: 'crop',
       component: () => import('../views/CropView.vue'),
