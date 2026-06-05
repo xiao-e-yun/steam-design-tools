@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
+  SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -60,6 +61,9 @@ const navItems = [
     </Sidebar>
 
     <SidebarInset>
+      <div class="flex md:hidden p-2">
+        <SidebarTrigger />
+      </div>
       <RouterView />
     </SidebarInset>
   </SidebarProvider>
