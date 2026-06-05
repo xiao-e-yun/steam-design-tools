@@ -12,7 +12,7 @@ export async function crop(dir: FileSystemDirectoryHandle, profile: Profile, sho
 
   const results = showcase.images.map(async file => {
     let image = await createBitmap(file, backgroundRegion)
-    if (background) image = background(image)
+    if (background && file.name.endsWith(".png")) image = background(image)
 
     const results = await Promise.all(regions.map(async (region, i) => {
       const [sema, ocanvas] = canvasArray[i]!
