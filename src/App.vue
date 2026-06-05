@@ -61,9 +61,16 @@ const navItems = [
     </Sidebar>
 
     <SidebarInset>
-      <div class="flex md:hidden p-2">
-        <SidebarTrigger />
-      </div>
+      <header class="flex md:hidden items-center justify-between px-4 py-3 border-b border-border">
+        <span class="text-base font-bold tracking-wide">Steam Tools</span>
+        <div class="flex items-center gap-1">
+          <Button variant="ghost" size="icon" @click="toggleDark()">
+            <Sun v-if="isDark" class="size-4" />
+            <Moon v-else class="size-4" />
+          </Button>
+          <SidebarTrigger />
+        </div>
+      </header>
       <RouterView />
     </SidebarInset>
   </SidebarProvider>
