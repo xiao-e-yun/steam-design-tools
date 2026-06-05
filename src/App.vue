@@ -29,8 +29,11 @@ const navItems = [
 <template>
   <SidebarProvider>
     <Sidebar>
-      <SidebarHeader class="px-4 py-5">
+      <SidebarHeader class="px-4 py-5 flex items-center justify-between">
         <span class="text-base font-semibold tracking-tight">Steam Tools</span>
+        <a href="https://github.com/xiao-e-yun/steam-design-tools" target="_blank" rel="noopener" class="text-muted-foreground hover:text-foreground transition-colors">
+          <Github class="size-4" />
+        </a>
       </SidebarHeader>
 
       <SidebarContent class="px-2">
@@ -46,14 +49,8 @@ const navItems = [
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter class="px-3 py-3 flex flex-col gap-1">
+      <SidebarFooter class="px-3 py-3">
         <Separator class="mb-2" />
-        <Button variant="ghost" size="sm" class="w-full justify-start gap-2" as-child>
-          <a href="https://github.com/xiao-e-yun/steam-design-tools" target="_blank" rel="noopener">
-            <Github class="size-4" />
-            GitHub
-          </a>
-        </Button>
         <Button variant="ghost" size="sm" class="w-full justify-start gap-2" @click="toggleDark()">
           <Sun v-if="isDark" class="size-4" />
           <Moon v-else class="size-4" />
