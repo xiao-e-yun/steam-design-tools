@@ -33,9 +33,8 @@ async function lookup() {
   }
   loading.value = true
   try {
-    const url = new URL(`/api/profile/`)
-    url.searchParams.set(...parsed)
-    const res = await fetch(url)
+    const [name, value] = parsed
+    const res = await fetch(`/api/profile?${name}=${encodeURIComponent(value)}`)
     const data = await res.json()
     if (!res.ok) {error.value = data.error ?? '發生錯誤'; return }
     profile.value = data
