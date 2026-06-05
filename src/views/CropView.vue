@@ -5,6 +5,7 @@ import type { ShowcaseType } from '@/utils/crop'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import PreviewProfile from '@/components/PreviewProfile.vue'
 import {
   Select,
   SelectContent,
@@ -71,6 +72,7 @@ async function run() {
 
 <template>
   <div class="p-8 max-w-xl flex flex-col gap-6">
+    <PreviewProfile :profile="{ background: bgUrl.trim() || null }" />
     <h1 class="text-xl font-semibold">Steam 展示欄切圖工具</h1>
 
     <div class="flex flex-col gap-1.5">

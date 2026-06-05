@@ -9,9 +9,8 @@ const props = defineProps<{ profile: Profile }>()
 
 <template>
   <div
-    v-if="profile.background"
     :class="$style.preview"
-    :style="{ backgroundImage: `url(${profile.background})` }"
+    :style="profile.background ? { backgroundImage: `url(${profile.background})` } : {}"
   >
     <div :class="$style.previewBg">
       <video
@@ -26,7 +25,7 @@ const props = defineProps<{ profile: Profile }>()
         <source :src="profile.animatedBackground.webm" type="video/webm" />
         <source :src="profile.animatedBackground.mp4" type="video/mp4" />
       </video>
-      <img v-else :src="profile.background" :class="$style.bgImage" alt="" />
+      <img v-else-if="profile.background" :src="profile.background" :class="$style.bgImage" alt="" />
     </div>
     <div :class="$style.previewContainer">
       <svg
