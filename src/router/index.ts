@@ -11,14 +11,14 @@ export const routes = [
       path: '/lookup',
       name: 'lookup',
       title: 'Lookup Background',
-      description: '查詢 Steam 用戶的個人頁面背景圖',
+      description: 'Look up a Steam user\'s profile background image',
       component: () => import('../views/LookupView.vue'),
     },
     {
       path: '/crop',
       name: 'crop',
       title: 'Crop Images',
-      description: '裁切圖片工具',
+      description: 'Crop images for Steam showcases',
       component: () => import('../views/CropView.vue'),
     },
   ]

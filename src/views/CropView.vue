@@ -32,27 +32,27 @@ function onFileChange(e: Event) {
 
 async function pickFolder() {
   if (!('showDirectoryPicker' in window)) {
-    status.value = '此瀏覽器不支援資料夾選擇，請使用 Chrome 或 Edge'
+    status.value = 'This browser does not support folder selection. Please use Chrome or Edge.'
     return
   }
   try {
     dirHandle.value = await (window as any).showDirectoryPicker({mode: 'readwrite'})
-    status.value = `已選擇資料夾：${dirHandle.value!.name}`
+    status.value = `Selected folder: ${dirHandle.value!.name}`
   } catch {
     // user cancelled
   }
 }
 
 async function run() {
-  if (!showcase.images.length) {status.value = '請先選擇圖片'; return }
-  if (!dirHandle.value) {status.value = '請先選擇輸出資料夾'; return }
+  if (!showcase.images.length) {status.value = 'Please select images first.'; return }
+  if (!dirHandle.value) {status.value = 'Please select an output folder first.'; return }
   running.value = true
   status.value = ''
   try {
     await crop(dirHandle.value, profile, showcase)
-    status.value = `完成！共處理 ${showcase.images.length} 張圖片`
+    status.value = `Done! Processed ${showcase.images.length} image(s).`
   } catch (err) {
-    status.value = `錯誤：${(err as Error).message}`
+    status.value = `Error: ${(err as Error).message}`
   }
   running.value = false
 }
@@ -61,48 +61,48 @@ async function run() {
 <template>
   <PreviewProfile  :profile="profile" :showcase="showcase" class="sticky top-0"  />
   <div class="w-full p-8 flex flex-col gap-6 bg-background z-10">
-    <h1 class="text-xl font-semibold">Steam 展示欄切圖工具</h1>
+    <h1 class="text-xl font-semibold">Steam Showcase Crop Tool</h1>
 
     <div class="flex flex-col gap-1.5">
-      <Label>展示欄類型</Label>
+      <Label>Showcase Type</Label>
       <Select v-model="showcase.kind">
         <SelectTrigger class="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem :value="ShowcaseKind.Artwork">藝術作品展示欄</SelectItem>
-          <SelectItem :value="ShowcaseKind.Featured">精選藝術作品展示欄</SelectItem>
-          <SelectItem :value="ShowcaseKind.Workshop">工作坊展示欄</SelectItem>
+          <SelectItem :value="ShowcaseKind.Artwork">Artwork Showcase</SelectItem>
+          <SelectItem :value="ShowcaseKind.Featured">Featured Artwork Showcase</SelectItem>
+          <SelectItem :value="ShowcaseKind.Workshop">Workshop Showcase</SelectItem>
         </SelectContent>
       </Select>
     </div>
 
     <div class="flex flex-col gap-1.5">
-      <Label for="bg-url">背景圖 URL</Label>
+      <Label for="bg-url">Background Image URL</Label>
       <Input id="bg-url" v-model="profile.background as string" placeholder="https://..." type="url" />
     </div>
 
     <div v-if="showcase.kind === ShowcaseKind.Artwork" class="flex items-center gap-2">
       <Checkbox id="trim-more" v-model="showcase.trimmed" />
-      <Label for="trim-more">裁減 [更多圖片]</Label>
+      <Label for="trim-more">Trim [More Items]</Label>
     </div>
 
     <div class="flex flex-col gap-1.5">
-      <Label for="file-input">選擇圖片</Label>
+      <Label for="file-input">Select Images</Label>
       <input id="file-input" type="file" accept="image/*" multiple
         class="text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground"
         @change="onFileChange" />
-      <p v-if="showcase.images.length" class="text-sm text-muted-foreground">已選擇 {{ showcase.images.length }} 張圖片</p>
+      <p v-if="showcase.images.length" class="text-sm text-muted-foreground">{{ showcase.images.length }} image(s) selected</p>
     </div>
 
     <div class="flex gap-2">
-      <Button variant="outline" :disabled="running" @click="pickFolder">選擇輸出資料夾</Button>
+      <Button variant="outline" :disabled="running" @click="pickFolder">Select Output Folder</Button>
       <Button :disabled="running || !showcase.images.length || !dirHandle" @click="run">
-        {{ running ? '處理中…' : '開始切圖' }}
+        {{ running ? 'Processing…' : 'Start Crop' }}
       </Button>
     </div>
 
-    <p v-if="status" :class="status.startsWith('錯誤') ? 'text-destructive' : 'text-green-500'" class="text-sm">
+    <p v-if="status" :class="status.startsWith('Error') ? 'text-destructive' : 'text-green-500'" class="text-sm">
       {{ status }}
     </p>
   </div>
