@@ -10,15 +10,13 @@ export interface Rect {
 export async function save(dir: FileSystemDirectoryHandle, path: string, blob: Blob, kind: ShowcaseKind) {
   const [currentDir, filename] = await createDirectory(dir, path)
   const fileHandle = await currentDir.getFileHandle(filename, {create: true})
-  let buf: ArrayBuffer = await blob.arrayBuffer()
   if (kind === ShowcaseKind.Workshop) {
-    const bytes = new Uint8Array(buf)
-    bytes[bytes.length - 1] = 0x21
-    buf = bytes.buffer
+    const mainChunk = blob.slice(0, blob.size - 1);
+    const flagChunk = new Uint8Array([0x21]);
+    blob = new Blob([mainChunk, flagChunk], { type: blob.type });
   }
   const writable = await fileHandle.createWritable()
-  await writable.write(buf)
-  await writable.close()
+  await blob.stream().pipeTo(writable); 
 }
 
 async function createDirectory(dir: FileSystemDirectoryHandle, path: string): Promise<[FileSystemDirectoryHandle, string]> {
