@@ -36,7 +36,7 @@ const navItems = [
         </a>
       </SidebarHeader>
 
-      <SidebarContent class="px-2 pt-2">
+      <SidebarContent class="px-2">
         <SidebarMenu class="gap-1">
           <SidebarMenuItem v-for="item in navItems" :key="item.to">
             <SidebarMenuButton
