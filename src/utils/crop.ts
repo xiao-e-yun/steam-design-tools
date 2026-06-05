@@ -1,139 +1,59 @@
-export type ShowcaseType = 0 | 1 | 2
+import {save, Semaphore, type Rect} from "."
+import {Profile} from "./profile"
+import {Showcase} from "./showcase"
 
-export interface CropRegion {
-  bgX: number
-  bgY: number
-  bgW: number
-  finalW: number
-}
+export async function crop(dir: FileSystemDirectoryHandle, profile: Profile, showcase: Showcase) {
+  const backgroundRegion = Showcase.backgroundRegion(showcase)
+  const background = await createBackgroundOverlay(profile, backgroundRegion)
 
-export interface SliceOutput {
-  subPath: string
-  canvas: HTMLCanvasElement
-}
+  const height = await Showcase.readHeight(showcase)
+  const regions = Showcase.regions(showcase, height)
+  const canvasArray = regions.map(region => [new Semaphore(1), new OffscreenCanvas(region.w, region.h)] as const)
 
-export const BG_REGIONS: Record<ShowcaseType, CropRegion> = {
-  0: { bgX: 494, bgY: 256, bgW: 615, finalW: 615 },
-  1: { bgX: 494, bgY: 256, bgW: 630, finalW: 630 },
-  2: { bgX: 489, bgY: 380, bgW: 628, finalW: 628 },
-}
+  const results = showcase.images.map(async file => {
+    let image = await createBitmap(file, backgroundRegion)
+    if (background) image = background(image)
 
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => resolve(img)
-    img.onerror = () => reject(new Error(`圖片載入失敗：${src}`))
-    img.src = src
+    const results = await Promise.all(regions.map(async (region, i) => {
+      const [sema, ocanvas] = canvasArray[i]!
+      await sema.acquire()
+      const clipped = await createImageBitmap(image, region.x, region.y, region.w, region.h)
+      ocanvas.getContext('bitmaprenderer')!.transferFromImageBitmap(clipped)
+      const blob = await ocanvas.convertToBlob({type: 'image/png'});
+      const path = (region.kind && `${region.kind}/`) + file.name
+      sema.release()
+      await save(dir, path, blob, showcase.kind)
+    }))
+
+    image.close()
+    return results
   })
+
+  // waiting for all images
+  await Promise.all(results)
 }
 
-export async function buildComposite(
-  userFile: File,
-  type: ShowcaseType,
-  bgUrl: string | null,
-): Promise<HTMLCanvasElement> {
-  const region = BG_REGIONS[type]
-  const objectUrl = URL.createObjectURL(userFile)
-  try {
-    const userImg = await loadImage(objectUrl)
-
-    if (!userImg.naturalWidth || !userImg.naturalHeight) {
-      throw new Error(`圖片尺寸無效：${userFile.name}`)
-    }
-
-    const scale = region.finalW / userImg.naturalWidth
-    const scaledW = region.finalW
-    const scaledH = Math.round(userImg.naturalHeight * scale)
-
-    const canvas = document.createElement('canvas')
-    canvas.width = scaledW
-    canvas.height = scaledH
-    const ctx = canvas.getContext('2d')!
-
-    if (bgUrl) {
-      ctx.fillStyle = '#000000'
-      ctx.fillRect(0, 0, scaledW, scaledH)
-      const bgImg = await loadImage(bgUrl)
-      const bgCropH = bgImg.naturalHeight - region.bgY
-      const bgDestH = Math.round((bgCropH / region.bgW) * scaledW)
-      ctx.drawImage(
-        bgImg,
-        region.bgX, region.bgY, region.bgW, bgCropH,
-        0, 0, scaledW, Math.min(bgDestH, scaledH),
-      )
-    }
-
-    ctx.drawImage(userImg, 0, 0, scaledW, scaledH)
-    return canvas
-  } finally {
-    URL.revokeObjectURL(objectUrl)
-  }
-}
-
-export function sliceCanvas(
-  composite: HTMLCanvasElement,
-  type: ShowcaseType,
-  filename: string,
-  trimRight = false,
-): SliceOutput[] {
-  function extractRegion(
-    src: HTMLCanvasElement,
-    sx: number, sy: number, sw: number, sh: number,
-  ): HTMLCanvasElement {
-    const c = document.createElement('canvas')
-    c.width = sw
-    c.height = sh
-    c.getContext('2d')!.drawImage(src, sx, sy, sw, sh, 0, 0, sw, sh)
-    return c
-  }
-
-  const h = composite.height
-
-  if (type === 0) {
-    const left = extractRegion(composite, 0, 0, 506, h)
-    const rightH = trimRight ? Math.max(0, h - 70) : h
-    const right = extractRegion(composite, 515, 0, 100, rightH)
-    return [
-      { subPath: `left/${filename}`, canvas: left },
-      { subPath: `right/${filename}`, canvas: right },
-    ]
-  }
-
-  if (type === 1) {
-    return [{ subPath: filename, canvas: composite }]
-  }
-
-  return Array.from({ length: 5 }, (_, i) => ({
-    subPath: `${i + 1}/${filename}`,
-    canvas: extractRegion(composite, i * 126, 0, 122, h),
-  }))
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/png'): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((b) => b ? resolve(b) : reject(new Error('toBlob failed')), type)
+async function createBitmap(file: File, size: Rect): Promise<ImageBitmap> {
+  const temp = await createImageBitmap(file) // TODO: Handle error
+  const height = Math.round((temp.height / temp.width) * size.w)
+  const resized = await createImageBitmap(temp, {
+    resizeWidth: size.w,
+    resizeHeight: height,
+    resizeQuality: "high",
   })
+  temp.close()
+  return resized
 }
 
-export async function saveSlices(
-  slices: SliceOutput[],
-  dir: FileSystemDirectoryHandle,
-): Promise<void> {
-  for (const { subPath, canvas } of slices) {
-    const parts = subPath.split('/')
-    let currentDir = dir
-    for (const part of parts.slice(0, -1)) {
-      currentDir = await currentDir.getDirectoryHandle(part, { create: true })
-    }
-    const leafName = parts[parts.length - 1]!
-    const fileHandle = await currentDir.getFileHandle(leafName, { create: true })
-    const blob = await canvasToBlob(canvas)
-    const buf = await blob.arrayBuffer()
-    const bytes = new Uint8Array(buf)
-    bytes[bytes.length - 1] = 0x21
-    const writable = await fileHandle.createWritable()
-    await writable.write(bytes)
-    await writable.close()
+async function createBackgroundOverlay(profile: Profile, region: Rect): Promise<undefined | ((bitmap: ImageBitmap) => ImageBitmap)> {
+  const background = await Profile.background(profile, region)
+  if (!background) return
+
+  const canvas = new OffscreenCanvas(region.w, region.h)
+  const ctx = canvas.getContext("2d")!
+  return (bitmap) => {
+    ctx.drawImage(background, 0, 0)
+    ctx.drawImage(bitmap, 0, 0)
+    return canvas.transferToImageBitmap()
   }
 }
