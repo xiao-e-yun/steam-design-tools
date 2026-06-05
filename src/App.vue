@@ -30,7 +30,7 @@ const navItems = [
   <SidebarProvider>
     <Sidebar>
       <SidebarHeader class="px-4 py-3 flex-row items-center justify-between">
-        <span class="font-heading text-base font-bold tracking-wide">Steam Tools</span>
+        <span class="text-base font-bold tracking-wide">Steam Tools</span>
         <a href="https://github.com/xiao-e-yun/steam-design-tools" target="_blank" rel="noopener" class="text-muted-foreground hover:text-foreground transition-colors">
           <Github class="size-4" />
         </a>
