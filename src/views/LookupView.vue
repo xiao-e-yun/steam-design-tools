@@ -46,7 +46,8 @@ async function lookup() {
 </script>
 
 <template>
-  <div class="p-8 max-w-2xl">
+  <PreviewProfile :profile="profile" class="sticky top-0"  />
+  <div class="w-full p-8 flex flex-col gap-6 bg-background z-10">
     <h1 class="text-xl font-semibold mb-6">Profile Background</h1>
 
     <form class="flex flex-col gap-4" @submit.prevent="lookup">
@@ -61,8 +62,6 @@ async function lookup() {
         </div>
       </div>
     </form>
-
     <p v-if="error" class="text-destructive text-sm mt-4">{{ error }}</p>
-    <PreviewProfile :profile="profile" class="mt-6" />
   </div>
 </template>

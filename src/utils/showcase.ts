@@ -26,12 +26,11 @@ export namespace Showcase {
       ...showcase,
     }
   }
-  export function backgroundRegion(self: Showcase, height?: number): Rect {
-    const h = height ?? 600
+  export function backgroundRegion(self: Showcase, h: number): Rect {
     return match(self.kind)
-      .with(ShowcaseKind.Artwork, () => ({x: 494, y: 256, w: 615, h: h - 256}))
-      .with(ShowcaseKind.Featured, () => ({x: 494, y: 256, w: 630, h: h - 256}))
-      .with(ShowcaseKind.Workshop, () => ({x: 489, y: 380, w: 628, h: h - 380}))
+      .with(ShowcaseKind.Artwork, () => ({x: 494, y: 256, w: 615, h}))
+      .with(ShowcaseKind.Featured, () => ({x: 494, y: 256, w: 630, h}))
+      .with(ShowcaseKind.Workshop, () => ({x: 489, y: 380, w: 628, h}))
       .exhaustive()
   }
   export function regions(self: Showcase, height: number): ShowcaseRegion[] {

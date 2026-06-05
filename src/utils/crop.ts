@@ -3,11 +3,11 @@ import {Profile} from "./profile"
 import {Showcase} from "./showcase"
 
 export async function crop(dir: FileSystemDirectoryHandle, profile: Profile, showcase: Showcase) {
-  const backgroundRegion = Showcase.backgroundRegion(showcase)
-  const background = await createBackgroundOverlay(profile, backgroundRegion)
 
   const height = await Showcase.readHeight(showcase)
   const regions = Showcase.regions(showcase, height)
+  const backgroundRegion = Showcase.backgroundRegion(showcase, height)
+  const background = await createBackgroundOverlay(profile, backgroundRegion)
   const canvasArray = regions.map(region => [new Semaphore(1), new OffscreenCanvas(region.w, region.h)] as const)
 
   const results = showcase.images.map(async file => {
@@ -49,7 +49,7 @@ async function createBackgroundOverlay(profile: Profile, region: Rect): Promise<
   const background = await Profile.background(profile, region)
   if (!background) return
 
-  const canvas = new OffscreenCanvas(region.w, region.h)
+  const canvas = new OffscreenCanvas(region.w, Math.max(region.h, 1080))
   const ctx = canvas.getContext("2d")!
   return (bitmap) => {
     ctx.drawImage(background, 0, 0)

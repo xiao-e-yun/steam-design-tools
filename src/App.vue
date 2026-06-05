@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterView, RouterLink, useRoute } from 'vue-router'
-import { useDark, useToggle } from '@vueuse/core'
 import { Moon, Sun, Github, ArrowLeft } from 'lucide-vue-next'
+import { useDark, useToggle } from '@vueuse/core'
 import {
   SidebarProvider,
   Sidebar,

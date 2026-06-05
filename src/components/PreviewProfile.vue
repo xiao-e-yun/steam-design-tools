@@ -2,21 +2,17 @@
 import type {Rect} from '@/utils';
 import type {Profile} from '@/utils/profile';
 import {Showcase} from '@/utils/showcase';
-import {ShowcaseKind} from '@/utils/showcase';
 import {computedAsync, useObjectUrl} from '@vueuse/core';
 import {computed} from 'vue'
 
 const props = withDefaults(defineProps<{profile: Profile; showcase?: Showcase}>(), {
-  showcase: () => ({images: [], kind: ShowcaseKind.Artwork, trimmed: false}),
+  showcase: () => Showcase.create()
 })
 const backgroundStyle = computed(() => {
-  const bg = props.profile.background
-  return bg && {backgroundImage: `url(${bg})`}
+  const bg = props.profile.background ||
+    "https://shared.fastly.steamstatic.com/community_assets/images/items/2640280/217bf7da4b58119d7298612c8350b93ca4e5b8c1.jpg"
+  return {backgroundImage: `url(${bg})`}
 })
-
-// 1920×1080 coordinate space. Frame is 976px wide, centered: left offset = (1920-976)/2 = 472
-const showcaseRegion = computed<Rect>(() => Showcase.backgroundRegion(props.showcase, ))
-const showcase = useObjectUrl(() => props.showcase?.images?.at(0))
 
 const containerPath = `
 M0 0 h976 v1165 a5 5 0 01-5 5 H5 a5 5 0 01-5-5 V0 z
@@ -32,6 +28,9 @@ const clipPath = computed(() => {
     `M${ox + x + 5} ${oy + y} h${w - 10} a5 5 0 0 1 5 5 v${h - 10} a5 5 0 0 1 -5 5 h${10 - w} a5 5 0 0 1 -5 -5 v${10 - h} a5 5 0 0 1 5 -5 z`
   ).join(" ")
 })
+
+const showcase = useObjectUrl(() => props.showcase?.images?.at(0))
+const showcaseRegion = computed<Rect>(() => Showcase.backgroundRegion(props.showcase, height.value))
 </script>
 
 <template>
@@ -51,7 +50,7 @@ const clipPath = computed(() => {
         </clipPath>
 
         <image v-if="showcase" :href="showcase" :x="showcaseRegion.x - 472" :y="showcaseRegion.y"
-          :width="showcaseRegion.w" :height="height" preserveAspectRatio="xMidYMid slice" clip-path="url(#clip)" />
+          :width="showcaseRegion.w" :height="showcaseRegion.h" preserveAspectRatio="xMidYMid slice" clip-path="url(#clip)" />
 
         <path fill-rule="evenodd" clip-rule="evenodd" :d="`${containerPath} ${clipPath}`" fill="#12151a"
           opacity="0.5" />
@@ -62,7 +61,6 @@ const clipPath = computed(() => {
 
 <style module>
 .preview {
-  position: relative;
   width: 100%;
   aspect-ratio: 1920 / 1080;
   overflow: hidden;

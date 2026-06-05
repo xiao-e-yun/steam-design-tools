@@ -59,8 +59,8 @@ async function run() {
 </script>
 
 <template>
-  <div class="p-8 max-w-xl flex flex-col gap-6">
-    <PreviewProfile :profile="profile" :showcase="showcase" />
+  <PreviewProfile  :profile="profile" :showcase="showcase" class="sticky top-0"  />
+  <div class="w-full p-8 flex flex-col gap-6 bg-background z-10">
     <h1 class="text-xl font-semibold">Steam 展示欄切圖工具</h1>
 
     <div class="flex flex-col gap-1.5">
