@@ -2,14 +2,32 @@
 import { ref } from 'vue'
 import { buildComposite, sliceCanvas, saveSlices } from '@/utils/crop'
 import type { ShowcaseType } from '@/utils/crop'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import type { AcceptableValue } from 'reka-ui'
 
 const type = ref<ShowcaseType>(0)
+const typeStr = ref('0')
 const bgUrl = ref('')
 const files = ref<File[]>([])
 const trimRight = ref(false)
 const dirHandle = ref<FileSystemDirectoryHandle | null>(null)
 const status = ref('')
 const running = ref(false)
+
+function onTypeChange(val: AcceptableValue) {
+  if (val === null) return
+  typeStr.value = String(val)
+  type.value = Number(val) as ShowcaseType
+}
 
 function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement
@@ -52,102 +70,55 @@ async function run() {
 </script>
 
 <template>
-  <main>
-    <h1>Steam 展示欄切圖工具</h1>
+  <div class="p-8 max-w-xl flex flex-col gap-6">
+    <h1 class="text-xl font-semibold">Steam 展示欄切圖工具</h1>
 
-    <section>
-      <label>
-        展示欄類型
-        <select v-model.number="type">
-          <option :value="0">藝術作品展示欄（615px）</option>
-          <option :value="1">精選藝術作品展示欄（630px）</option>
-          <option :value="2">工作坊展示欄（628px）</option>
-        </select>
-      </label>
-    </section>
+    <div class="flex flex-col gap-1.5">
+      <Label>展示欄類型</Label>
+      <Select :model-value="typeStr" @update:model-value="onTypeChange">
+        <SelectTrigger class="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="0">藝術作品展示欄（615px）</SelectItem>
+          <SelectItem value="1">精選藝術作品展示欄（630px）</SelectItem>
+          <SelectItem value="2">工作坊展示欄（628px）</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
 
-    <section>
-      <label>
-        背景圖 URL（選填）
-        <input v-model="bgUrl" placeholder="https://..." type="url" />
-      </label>
-    </section>
+    <div class="flex flex-col gap-1.5">
+      <Label for="bg-url">背景圖 URL（選填）</Label>
+      <Input id="bg-url" v-model="bgUrl" placeholder="https://..." type="url" />
+    </div>
 
-    <section v-if="type === 0">
-      <label>
-        <input v-model="trimRight" type="checkbox" />
-        裁減更多圖片（右側底部額外裁去 70px）
-      </label>
-    </section>
+    <div v-if="type === 0" class="flex items-center gap-2">
+      <input id="trim-right" v-model="trimRight" type="checkbox" class="size-4 rounded border-border" />
+      <Label for="trim-right">裁減更多圖片（右側底部額外裁去 70px）</Label>
+    </div>
 
-    <section>
-      <label>
-        選擇圖片（可多選）
-        <input type="file" accept="image/*" multiple @change="onFileChange" />
-      </label>
-      <p v-if="files.length">已選擇 {{ files.length }} 張圖片</p>
-    </section>
+    <div class="flex flex-col gap-1.5">
+      <Label for="file-input">選擇圖片（可多選）</Label>
+      <input
+        id="file-input"
+        type="file"
+        accept="image/*"
+        multiple
+        class="text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground"
+        @change="onFileChange"
+      />
+      <p v-if="files.length" class="text-sm text-muted-foreground">已選擇 {{ files.length }} 張圖片</p>
+    </div>
 
-    <section>
-      <button @click="pickFolder" :disabled="running">選擇輸出資料夾</button>
-    </section>
-
-    <section>
-      <button @click="run" :disabled="running || !files.length || !dirHandle">
+    <div class="flex gap-2">
+      <Button variant="outline" :disabled="running" @click="pickFolder">選擇輸出資料夾</Button>
+      <Button :disabled="running || !files.length || !dirHandle" @click="run">
         {{ running ? '處理中…' : '開始切圖' }}
-      </button>
-    </section>
+      </Button>
+    </div>
 
-    <p v-if="status" :class="status.startsWith('錯誤') ? 'error' : 'info'">{{ status }}</p>
-  </main>
+    <p v-if="status" :class="status.startsWith('錯誤') ? 'text-destructive' : 'text-green-500'" class="text-sm">
+      {{ status }}
+    </p>
+  </div>
 </template>
-
-<style scoped>
-main {
-  max-width: 600px;
-  margin: 4rem auto;
-  padding: 0 1rem;
-  font-family: sans-serif;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-h1 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-  color: #ccc;
-}
-input[type="url"],
-select {
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  border: 1px solid #555;
-  border-radius: 4px;
-  background: #1a1a1a;
-  color: #eee;
-}
-button {
-  align-self: flex-start;
-  padding: 0.5rem 1.25rem;
-  font-size: 1rem;
-  background: #1b2838;
-  color: #c7d5e0;
-  border: 1px solid #4c6b8a;
-  border-radius: 4px;
-  cursor: pointer;
-}
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-.error { color: #e06c6c; }
-.info { color: #8bc34a; }
-</style>
