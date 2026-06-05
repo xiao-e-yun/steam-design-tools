@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {ref} from 'vue'
 import {Button} from '@/components/ui/button'
-import {ExternalLink, Copy, Check} from '@lucide/vue'
+import {ExternalLink} from '@lucide/vue'
+import CopySnippet from '@/components/CopySnippet.vue'
 
 interface Guide {
   title: string
@@ -36,14 +36,6 @@ const guides: Guide[] = [
     snippet: "$J('[name=consumer_app_id]').val(480);$J('[name=file_type]').val(9);$J('[name=visibility]').val(0);",
   },
 ]
-
-const copied = ref<number | null>(null)
-
-async function copy(index: number, snippet: string) {
-  await navigator.clipboard.writeText(snippet)
-  copied.value = index
-  setTimeout(() => { copied.value = null }, 2000)
-}
 </script>
 
 <template>
@@ -71,10 +63,7 @@ async function copy(index: number, snippet: string) {
 
       <div class="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
         <code class="flex-1 text-xs font-mono break-all">{{ guide.snippet }}</code>
-        <Button variant="ghost" size="icon" class="shrink-0 size-7" @click="copy(i, guide.snippet)">
-          <Check v-if="copied === i" class="size-3.5 text-green-500" />
-          <Copy v-else class="size-3.5" />
-        </Button>
+        <CopySnippet :snippet="guide.snippet" />
       </div>
     </div>
   </div>

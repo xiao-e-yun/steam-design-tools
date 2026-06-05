@@ -4,6 +4,7 @@ import {Input} from '@/components/ui/input'
 import {Button} from '@/components/ui/button'
 import {Label} from '@/components/ui/label'
 import PreviewProfile from '@/components/PreviewProfile.vue'
+import CopySnippet from '@/components/CopySnippet.vue'
 import {Profile} from '@/utils/profile'
 
 const input = ref('')
@@ -68,10 +69,19 @@ async function lookup() {
     <h1>Results</h1>
     <div class="flex flex-col gap-2">
       <Label> Background Url </Label>
-      <Input label="Background URL" :value="profile.background" placeholder="Background URL" readonly />
+      <div class="flex gap-2">
+        <Input label="Background URL" :value="profile.background" placeholder="Background URL" readonly class="flex-1" />
+        <CopySnippet :disabled="!profile.background" :snippet="profile.background ?? ''" />
+      </div>
       <Label> Animated Background </Label>
-      <Input label="Mp4 Background URL" :value="profile.animatedBackground?.mp4" placeholder="Mp4 Background URL" readonly />
-      <Input label="Webm Background URL" :value="profile.animatedBackground?.webm" placeholder="Webm Background URL" readonly />
+      <div class="flex gap-2">
+        <Input label="Mp4 Background URL" :value="profile.animatedBackground?.mp4" placeholder="Mp4 Background URL" readonly class="flex-1" />
+        <CopySnippet :disabled="!profile.animatedBackground?.mp4" :snippet="profile.animatedBackground?.mp4 ?? ''" />
+      </div>
+      <div class="flex gap-2">
+        <Input label="Webm Background URL" :value="profile.animatedBackground?.webm" placeholder="Webm Background URL" readonly class="flex-1" />
+        <CopySnippet :disabled="!profile.animatedBackground?.webm" :snippet="profile.animatedBackground?.webm ?? ''" />
+      </div>
     </div>
   </div>
 </template>
