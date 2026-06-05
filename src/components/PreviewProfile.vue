@@ -2,8 +2,8 @@
 import type {Rect} from '@/utils';
 import type {Profile} from '@/utils/profile';
 import {Showcase} from '@/utils/showcase';
-import {computedAsync, useObjectUrl} from '@vueuse/core';
-import {computed} from 'vue'
+import {computedAsync} from '@vueuse/core';
+import {computed, onUnmounted, ref} from 'vue'
 
 const props = withDefaults(defineProps<{profile: Profile; showcase?: Showcase}>(), {
   showcase: () => Showcase.create()
@@ -29,7 +29,21 @@ const clipPath = computed(() => {
   ).join(" ")
 })
 
-const showcase = useObjectUrl(() => props.showcase?.images?.at(0))
+let index = ref(0);
+let interval = NaN;
+const fps = 20;
+const images = computed<string[]>(prev => {
+  index.value = 0
+  clearInterval(interval)
+  if (props.showcase.images.length > 1)
+    interval = setInterval(() => index.value = (index.value + 1) % props.showcase.images.length, 1000 / fps)
+
+  if (prev) prev.map(URL.revokeObjectURL)
+  return props.showcase.images.map(file => URL.createObjectURL(file)) ?? []
+})
+onUnmounted(() => images.value.map(URL.revokeObjectURL))
+
+const showcase = computed(() => images.value[index.value])
 const showcaseRegion = computed<Rect>(() => Showcase.backgroundRegion(props.showcase, height.value))
 </script>
 
@@ -50,7 +64,8 @@ const showcaseRegion = computed<Rect>(() => Showcase.backgroundRegion(props.show
         </clipPath>
 
         <image v-if="showcase" :href="showcase" :x="showcaseRegion.x - 472" :y="showcaseRegion.y"
-          :width="showcaseRegion.w" :height="showcaseRegion.h" preserveAspectRatio="xMidYMid slice" clip-path="url(#clip)" />
+          :width="showcaseRegion.w" :height="showcaseRegion.h" preserveAspectRatio="xMidYMid slice"
+          clip-path="url(#clip)" />
 
         <path fill-rule="evenodd" clip-rule="evenodd" :d="`${containerPath} ${clipPath}`" fill="#12151a"
           opacity="0.5" />
