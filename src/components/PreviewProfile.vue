@@ -5,8 +5,11 @@ import {Showcase} from '@/utils/showcase';
 import {computedAsync} from '@vueuse/core';
 import {computed, onUnmounted, ref} from 'vue'
 
-const props = withDefaults(defineProps<{profile: Profile; showcase?: Showcase}>(), {
-  showcase: () => Showcase.create()
+const props = withDefaults(defineProps<{
+  profile: Profile,
+  showcase?: Showcase,
+}>(), {
+  showcase: () => Showcase.create(),
 })
 const backgroundStyle = computed(() => {
   const bg = props.profile.background ||
@@ -31,12 +34,11 @@ const clipPath = computed(() => {
 
 let index = ref(0);
 let interval = NaN;
-const fps = 20;
 const images = computed<string[]>(prev => {
   index.value = 0
   clearInterval(interval)
   if (props.showcase.images.length > 1)
-    interval = setInterval(() => index.value = (index.value + 1) % props.showcase.images.length, 1000 / fps)
+    interval = setInterval(() => index.value = (index.value + 1) % props.showcase.images.length, 1000 / 20)
 
   if (prev) prev.map(URL.revokeObjectURL)
   return props.showcase.images.map(file => URL.createObjectURL(file)) ?? []

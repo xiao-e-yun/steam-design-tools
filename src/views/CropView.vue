@@ -83,8 +83,8 @@ async function run() {
     </div>
 
     <div v-if="showcase.kind === ShowcaseKind.Artwork" class="flex items-center gap-2">
-      <Checkbox id="trim-top" v-model="showcase.trimmed" />
-      <Label for="trim-right">裁減 [更多圖片]</Label>
+      <Checkbox id="trim-more" v-model="showcase.trimmed" />
+      <Label for="trim-more">裁減 [更多圖片]</Label>
     </div>
 
     <div class="flex flex-col gap-1.5">

@@ -31,7 +31,8 @@ const navItems = [
   <SidebarProvider>
     <Sidebar>
       <SidebarHeader class="px-4 py-3 flex-row items-center justify-between">
-        <RouterLink to="/" class="text-base font-bold tracking-wide hover:opacity-80 transition-opacity">Steam Tools
+        <RouterLink to="/" class="text-base font-bold tracking-wide hover:opacity-80 transition-opacity">
+          Steam Design Tools
         </RouterLink>
         <RouterLink v-if="route.path !== '/'" to="/"
           class="text-muted-foreground hover:text-foreground transition-colors">
@@ -72,7 +73,8 @@ const navItems = [
 
     <SidebarInset>
       <header class="flex md:hidden items-center justify-between px-4 py-3 border-b border-border">
-        <RouterLink to="/" class="text-base font-bold tracking-wide hover:opacity-80 transition-opacity">Steam Tools
+        <RouterLink to="/" class="text-base font-bold tracking-wide hover:opacity-80 transition-opacity">
+          Steam Design Tools 
         </RouterLink>
         <div class="flex items-center gap-1">
           <Button variant="ghost" size="icon" @click="toggleDark()">
