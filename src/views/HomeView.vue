@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import PreviewProfile from '@/components/PreviewProfile.vue'
 
 interface Profile {
@@ -47,56 +50,31 @@ async function lookup() {
 </script>
 
 <template>
-  <main>
-    <h1>Steam Profile Background</h1>
-    <form @submit.prevent="lookup">
-      <input
-        v-model="input"
-        placeholder="https://steamcommunity.com/id/yourname/"
-        :disabled="loading"
-      />
-      <button type="submit" :disabled="loading">{{ loading ? '查詢中…' : '查詢' }}</button>
-    </form>
-    <p v-if="error" class="error">{{ error }}</p>
-    <p v-if="profile && !profile.background" class="no-bg">此用戶沒有設定背景</p>
-    <PreviewProfile v-else-if="profile" :profile="profile" />
-  </main>
-</template>
+  <div class="p-8 max-w-2xl">
+    <h1 class="text-xl font-semibold mb-6">Profile Background</h1>
 
-<style scoped>
-main {
-  max-width: 720px;
-  margin: 4rem auto;
-  padding: 0 1rem;
-  font-family: sans-serif;
-}
-h1 {
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-}
-form {
-  display: flex;
-  gap: 0.5rem;
-}
-input {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  border: 1px solid #555;
-  border-radius: 4px;
-  background: #1a1a1a;
-  color: #eee;
-}
-button {
-  padding: 0.5rem 1.25rem;
-  font-size: 1rem;
-  background: #1b2838;
-  color: #c7d5e0;
-  border: 1px solid #4c6b8a;
-  border-radius: 4px;
-  cursor: pointer;
-}
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-.error { color: #e06c6c; margin-top: 0.75rem; }
-.no-bg { color: #888; margin-top: 1rem; }
-</style>
+    <form class="flex flex-col gap-4" @submit.prevent="lookup">
+      <div class="flex flex-col gap-1.5">
+        <Label for="profile-url">Steam Profile URL</Label>
+        <div class="flex gap-2">
+          <Input
+            id="profile-url"
+            v-model="input"
+            placeholder="https://steamcommunity.com/id/yourname/"
+            :disabled="loading"
+            class="flex-1"
+          />
+          <Button type="submit" :disabled="loading">
+            {{ loading ? '查詢中…' : '查詢' }}
+          </Button>
+        </div>
+      </div>
+    </form>
+
+    <p v-if="error" class="text-destructive text-sm mt-4">{{ error }}</p>
+    <p v-if="profile && !profile.background" class="text-muted-foreground text-sm mt-4">此用戶沒有設定背景</p>
+    <div v-else-if="profile" class="mt-6">
+      <PreviewProfile :profile="profile" />
+    </div>
+  </div>
+</template>
