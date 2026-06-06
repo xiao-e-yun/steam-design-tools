@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import {computed, ref} from 'vue'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
 import {Label} from '@/components/ui/label'
@@ -16,6 +16,7 @@ import {Showcase, ShowcaseKind} from '@/utils/showcase'
 import {Profile} from '@/utils/profile'
 import {crop} from '@/utils/crop'
 import {Checkbox} from '@/components/ui/checkbox'
+import {Progress} from '@/components/ui/progress'
 
 const profile = reactive(Profile.create())
 const showcase = reactive<Showcase>(Showcase.create())
@@ -43,13 +44,19 @@ async function pickFolder() {
   }
 }
 
+const progress = ref<[number, number]>([0, 0]) // [current, total]
+const progressPercent = computed(() => {
+  const [current, total] = progress.value
+  return total ? current / total * 100 : 0
+})
 async function run() {
   if (!showcase.images.length) {status.value = 'Please select images first.'; return }
   if (!dirHandle.value) {status.value = 'Please select an output folder first.'; return }
   running.value = true
+  progress.value = [0, showcase.images.length]
   status.value = ''
   try {
-    await crop(dirHandle.value, profile, showcase)
+    await crop(dirHandle.value, profile, showcase, progress)
     status.value = `Done! Processed ${showcase.images.length} image(s).`
   } catch (err) {
     status.value = `Error: ${(err as Error).message}`
@@ -59,7 +66,7 @@ async function run() {
 </script>
 
 <template>
-  <PreviewProfile  :profile="profile" :showcase="showcase" class="sticky top-0"  />
+  <PreviewProfile  :profile="profile" :showcase="showcase" :animated="!running" class="sticky top-0"  />
   <div class="w-full p-8 flex flex-col gap-6 bg-background z-10">
     <h1 class="text-xl font-semibold">Steam Showcase Crop Tool</h1>
 
@@ -102,7 +109,11 @@ async function run() {
       </Button>
     </div>
 
-    <p v-if="status" :class="status.startsWith('Error') ? 'text-destructive' : 'text-green-500'" class="text-sm">
+    <div v-if="running" class="flex flex-col gap-1.5">
+      <Progress :model-value="progressPercent" class="w-full" />
+        <p class="text-sm text-muted-foreground">{{ progress.join(" / ") }}</p>
+    </div>
+    <p v-else-if="status" :class="status.startsWith('Error') ? 'text-destructive' : 'text-green-500'" class="text-sm">
       {{ status }}
     </p>
   </div>

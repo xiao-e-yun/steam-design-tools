@@ -1,8 +1,9 @@
+import type {Ref} from "vue"
 import {FileSystem, Semaphore, type Rect} from "."
 import {Profile} from "./profile"
 import {Showcase} from "./showcase"
 
-export async function crop(dir: FileSystemDirectoryHandle, profile: Profile, showcase: Showcase) {
+export async function crop(dir: FileSystemDirectoryHandle, profile: Profile, showcase: Showcase, progress: Ref<[number, number]>) {
 
   const height = await Showcase.readHeight(showcase)
   const regions = Showcase.regions(showcase, height)
@@ -11,6 +12,7 @@ export async function crop(dir: FileSystemDirectoryHandle, profile: Profile, sho
   const canvasArray = regions.map(region => [new Semaphore(1), new OffscreenCanvas(region.w, region.h)] as const)
 
   const fs = new FileSystem(dir)
+  progress.value = [0, showcase.images.length * regions.length]
   const results = showcase.images.map(async file => {
     let image = await createBitmap(file, backgroundRegion)
     if (background && file.name.endsWith(".png")) image = background(image)
@@ -26,6 +28,7 @@ export async function crop(dir: FileSystemDirectoryHandle, profile: Profile, sho
       sema.release()
 
       await fs.save(path, blob, showcase.kind)
+      progress.value[0] += 1
     }))
 
     image.close()

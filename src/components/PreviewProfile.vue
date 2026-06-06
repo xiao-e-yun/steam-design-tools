@@ -8,8 +8,10 @@ import {computed, onUnmounted, ref} from 'vue'
 const props = withDefaults(defineProps<{
   profile: Profile,
   showcase?: Showcase,
+  animated?: boolean,
 }>(), {
   showcase: () => Showcase.create(),
+  animated: true,
 })
 const backgroundStyle = computed(() => {
   const bg = props.profile.background ||
@@ -38,7 +40,10 @@ const images = computed<string[]>(prev => {
   index.value = 0
   clearInterval(interval)
   if (props.showcase.images.length > 1)
-    interval = setInterval(() => index.value = (index.value + 1) % props.showcase.images.length, 1000 / 20)
+    interval = setInterval(() => {
+      if (!props.animated) return
+      index.value = (index.value + 1) % props.showcase.images.length
+    }, 1000 / 20)
 
   if (prev) prev.map(URL.revokeObjectURL)
   return props.showcase.images.map(file => URL.createObjectURL(file)) ?? []
