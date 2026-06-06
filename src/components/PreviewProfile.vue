@@ -53,7 +53,7 @@ const showcaseRegion = computed<Rect>(() => Showcase.backgroundRegion(props.show
   <div :class="$style.preview" :style="backgroundStyle">
     <div :class="$style.previewBg">
       <video v-if="profile.animatedBackground" :poster="profile.background ?? undefined" autoplay loop muted playsinline
-        style="width: 1920px; height: 1080px">
+        style="width: 100%">
         <source :src="profile.animatedBackground.webm" type="video/webm" />
         <source :src="profile.animatedBackground.mp4" type="video/mp4" />
       </video>
