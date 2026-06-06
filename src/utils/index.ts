@@ -7,27 +7,6 @@ export interface Rect {
   h: number
 }
 
-export async function save(dir: FileSystemDirectoryHandle, path: string, blob: Blob, kind: ShowcaseKind) {
-  const [currentDir, filename] = await createDirectory(dir, path)
-  const fileHandle = await currentDir.getFileHandle(filename, {create: true})
-  if (kind === ShowcaseKind.Workshop) {
-    const mainChunk = blob.slice(0, blob.size - 1);
-    const flagChunk = new Uint8Array([0x21]);
-    blob = new Blob([mainChunk, flagChunk], { type: blob.type });
-  }
-  const writable = await fileHandle.createWritable()
-  await blob.stream().pipeTo(writable); 
-}
-
-async function createDirectory(dir: FileSystemDirectoryHandle, path: string): Promise<[FileSystemDirectoryHandle, string]> {
-  const parts = path.split('/')
-  const filename = parts.pop()!
-  for (const part of parts) {
-    dir = await dir.getDirectoryHandle(part, {create: true})
-  }
-  return [dir, filename]
-}
-
 export class Semaphore {
   currentPermits: number
   queue: ((_: null) => void)[] = []
@@ -55,6 +34,54 @@ export class Semaphore {
       this.currentPermits--;
       this.queue.shift()!(null);
     }
+  }
+}
+
+export class FileSystem {
+  constructor(readonly dir: FileSystemDirectoryHandle) {}
+
+  readonly MAX_CONCURRENT_WRITES = 16
+
+  private writeSemaphore = new Semaphore(this.MAX_CONCURRENT_WRITES)
+  async save(path: string, blob: Blob, kind: ShowcaseKind) {
+
+    if (kind === ShowcaseKind.Workshop) 
+      blob = blob.slice(0, blob.size - 1);
+
+    await this.writeSemaphore.acquire();
+    // create directories as needed
+    const [currentDir, filename] = await this.createDirectory(path)
+
+    // create file and write blob to it
+    const fileHandle = await currentDir.getFileHandle(filename, {create: true})
+    const writable = await fileHandle.createWritable()
+    await blob.stream().pipeTo(writable, { preventClose: true })
+
+    if (kind === ShowcaseKind.Workshop) 
+      writable.write(new Uint8Array([0x21]))
+
+    writable.close()
+    this.writeSemaphore.release();
+  }
+
+  private createdDirs = new Map<string, Promise<FileSystemDirectoryHandle>>()
+  async createDirectory(path: string): Promise<[FileSystemDirectoryHandle, string]> {
+    const parts = path.split('/')
+    const filename = parts.pop()!
+
+    const dirPath = parts.join('/')
+    const created = this.createdDirs.get(dirPath)
+    if (created) return [await created, filename]
+
+    const handle = (async () => {
+      let dir = this.dir
+      for (const part of parts)
+        dir = await dir.getDirectoryHandle(part, {create: true})
+      return dir
+    })()
+
+    this.createdDirs.set(dirPath, handle)
+    return [await handle, filename]
   }
 }
 

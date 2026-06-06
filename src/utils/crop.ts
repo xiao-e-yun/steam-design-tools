@@ -1,4 +1,4 @@
-import {save, Semaphore, type Rect} from "."
+import {FileSystem, Semaphore, type Rect} from "."
 import {Profile} from "./profile"
 import {Showcase} from "./showcase"
 
@@ -10,19 +10,22 @@ export async function crop(dir: FileSystemDirectoryHandle, profile: Profile, sho
   const background = await createBackgroundOverlay(profile, backgroundRegion)
   const canvasArray = regions.map(region => [new Semaphore(1), new OffscreenCanvas(region.w, region.h)] as const)
 
+  const fs = new FileSystem(dir)
   const results = showcase.images.map(async file => {
     let image = await createBitmap(file, backgroundRegion)
     if (background && file.name.endsWith(".png")) image = background(image)
 
     const results = await Promise.all(regions.map(async (region, i) => {
       const [sema, ocanvas] = canvasArray[i]!
+
       await sema.acquire()
       const clipped = await createImageBitmap(image, region.x, region.y, region.w, region.h)
       ocanvas.getContext('bitmaprenderer')!.transferFromImageBitmap(clipped)
       const blob = await ocanvas.convertToBlob({type: 'image/png'});
       const path = (region.kind && `${region.kind}/`) + file.name
       sema.release()
-      await save(dir, path, blob, showcase.kind)
+
+      await fs.save(path, blob, showcase.kind)
     }))
 
     image.close()
