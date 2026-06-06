@@ -8,18 +8,18 @@ export const routes = [
       component: HomeView,
     },
     {
-      path: '/lookup',
-      name: 'lookup',
-      title: 'Lookup Background',
-      description: 'Look up a Steam user\'s profile background image',
-      component: () => import('../views/LookupView.vue'),
-    },
-    {
       path: '/crop',
       name: 'crop',
       title: 'Crop Images',
       description: 'Crop images for Steam showcases',
       component: () => import('../views/CropView.vue'),
+    },
+    {
+      path: '/lookup',
+      name: 'lookup',
+      title: 'Lookup Background',
+      description: 'Look up a Steam user\'s profile background image',
+      component: () => import('../views/LookupView.vue'),
     },
     {
       path: '/guides',
